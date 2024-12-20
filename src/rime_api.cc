@@ -9,6 +9,7 @@
 #include <rime/common.h>
 #include <rime/module.h>
 #include <rime/setup.h>
+#include "rime_api.h"
 
 #include "rime_api_impl.h"
 

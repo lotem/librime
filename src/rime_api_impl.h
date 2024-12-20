@@ -16,8 +16,6 @@
 #include <rime/signature.h>
 #include <rime/switches.h>
 
-#include "rime_api.h"
-
 using namespace rime;
 
 void rime_declare_module_dependencies();
