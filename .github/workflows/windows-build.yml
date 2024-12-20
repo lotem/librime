@@ -16,11 +16,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        compiler: [msvc, clang]
+        compiler: [msvc]
         arch: [x64]
         include:
           - { compiler: msvc, cc: cl, cxx: cl }
-          #- { compiler: clang, cc: clang, cxx: clang++ }
           #- { compiler: msvc, arch: x86, cross_arch: x64_x86 }
     env:
       boost_version: 1.84.0
@@ -103,75 +102,3 @@ jobs:
           path: |
             rime-${{ env.git_ref_name }}-${{ runner.os }}-${{ matrix.compiler }}-${{ matrix.arch }}.7z
             rime-deps-${{ env.git_ref_name }}-${{ runner.os }}-${{ matrix.compiler }}-${{ matrix.arch }}.7z
-
-  build-mingw:
-    runs-on: windows-latest
-    env:
-      RIME_PLUGINS: ${{ inputs.rime_plugins }}
-    defaults:
-      run:
-        shell: msys2 {0}
-
-    steps:
-      - name: Install dependencies with MSYS2
-        uses: msys2/setup-msys2@v2
-        with:
-          release: false
-          update: true
-          msystem: UCRT64
-          install: >-
-            git
-            base-devel
-            mingw-w64-ucrt-x86_64-boost
-            mingw-w64-ucrt-x86_64-glog
-            mingw-w64-ucrt-x86_64-gtest
-            mingw-w64-ucrt-x86_64-yaml-cpp
-            mingw-w64-ucrt-x86_64-leveldb
-            mingw-w64-ucrt-x86_64-marisa
-            mingw-w64-ucrt-x86_64-opencc
-          pacboy: >-
-            toolchain:p
-            cmake:p
-            ninja:p
-
-      - run: git config --global core.autocrlf input
-      - name: Checkout last commit
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ inputs.repository }}
-            
-      - name: Configure build environment
-        run: |
-          echo git_ref_name="$(git describe --always)" >> $GITHUB_ENV
-
-      - name: Install Rime plugins
-        run: ./action-install-plugins-macos.sh
-
-      - name: Build with mingw-w64
-        run: |
-          cmake -B build -G Ninja \
-            -DCMAKE_INSTALL_PREFIX:PATH=`pwd`/dist \
-            -DCMAKE_BUILD_TYPE:STRING=Release \
-            -DENABLE_LOGGING:BOOL=ON \
-            -DBUILD_TEST:BOOL=ON \
-            -DBUILD_STATIC:BOOL=ON \
-            -DBUILD_SHARED_LIBS:BOOL=ON
-          cmake --build build
-          cmake --install build
-          cd build && cp ./bin/librime.dll ./test
-          ctest --output-on-failure
-
-      - name: Create distributable
-        run: |
-          tar -cjvf rime-${{ env.git_ref_name }}-${{ runner.os }}-mingw.tar.bz2 \
-          dist version-info.txt
-          tar -cjvf rime-deps-${{ env.git_ref_name }}-${{ runner.os }}-mingw.tar.bz2 \
-          --exclude '*/.placeholder' \
-          bin include lib share
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifact-${{ runner.os }}-mingw
-          path: |
-            rime-${{ env.git_ref_name }}-${{ runner.os }}-mingw.tar.bz2
