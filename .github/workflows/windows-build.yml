@@ -20,8 +20,8 @@ jobs:
         arch: [x64]
         include:
           - { compiler: msvc, cc: cl, cxx: cl }
-          - { compiler: clang, cc: clang, cxx: clang++ }
-          - { compiler: msvc, arch: x86, cross_arch: x64_x86 }
+          #- { compiler: clang, cc: clang, cxx: clang++ }
+          #- { compiler: msvc, arch: x86, cross_arch: x64_x86 }
     env:
       boost_version: 1.84.0
       BOOST_ROOT: ${{ github.workspace }}\deps\boost-1.84.0

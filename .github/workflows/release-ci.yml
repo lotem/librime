@@ -3,27 +3,19 @@ name: Release CI
 on:
   push:
     branches:
-      - master
+      - test
     tags:
       - '[0-9]+.*'
   workflow_dispatch:
 
 jobs:
-  linux:
-    uses: ./.github/workflows/linux-build.yml
-
-  macos:
-    uses: ./.github/workflows/macos-build.yml
-    with:
-      rime_plugins: hchunhui/librime-lua lotem/librime-octagram rime/librime-predict
-
   windows:
     uses: ./.github/workflows/windows-build.yml
     with:
       rime_plugins: hchunhui/librime-lua lotem/librime-octagram rime/librime-predict
 
   release:
-    needs: [macos, windows]
+    needs: [windows]
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
@@ -33,7 +25,7 @@ jobs:
           merge-multiple: true
 
       - name: Create Nightly release
-        if: ${{ github.repository == 'rime/librime' && github.ref == 'refs/heads/master' }}
+        if: ${{ github.repository == 'lotem/librime' && github.ref == 'refs/heads/test' }}
         uses: 'marvinpinto/action-automatic-releases@latest'
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
